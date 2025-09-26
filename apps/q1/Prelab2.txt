@@ -1,0 +1,39 @@
+ (2 points) How many semaphores and locks are available in DLXOS, respectively?
+    The number of semaphors available is 32 and the number of locks 
+    available is 64. 
+
+ (2 points) What are the system calls to create, acquire and release a lock?
+    LockCreate();
+    LockHandleAcquire(lock_t lock);
+    LockHandleRelease(lock_t lock);
+
+ (2 points) How is a semaphore created in DLXOS?
+    Create a semaphore using SemCreate(int count). Grabs a Semaphore, 
+    initializes it and returns a handle to this semaphore. Count
+    is the initial value of the semaphore. The return sem_t is
+    the ID of the semaphore. 
+
+ (2 points) Explain how lock_acquire, lock_release, sem_signal and sem_wait work.
+    The purpose of lock_acquire is to gain access to a shared resource. 
+    The process first checks if the lock is available.  If the lock is
+    free, the process acquires it. If another process already holds the lock,
+    it will remain asleep until the lock is released.
+
+    The purpose of lock_release is to give up the lock once the process is 
+    finished with that shared resource, allowing another process to take its turn.
+    If one or more processes are waiting, the operating system wakes up the one
+    next in line so it can run it. 
+    
+    The purpose of sem_signal is to increment the counter allowing another process
+    to run. If there is a queue, it wakes up the next process in line not changing
+    the counter. 
+
+    The purpose of sem_wait is to check if we have enough space to continue that
+    process. If the counter is > 0, we can continue that process. If its = 0,
+    we put it to sleep and place it on a queue. 
+
+ (2 points) What is a handle and how is it used to access semaphores in DLXOS?
+    A handle represents a resource used. Just like in SemCreate, it returns 
+    the reference number (handle) to that semaphore. Handles help access semaphores
+    in DLXOS by holding the integer value associated with the available semaphore.
+    You can use this number to then perform actions with that handle.  
