@@ -1,0 +1,102 @@
+# How many semaphores and locks are available in DLXOS, respectively?
+Per the defines in /include/os/synch.h the max number 
+of semaphores and locks are 32 and 64 respectively.
+
+# What are the system calls to create, acquire and release a lock?
+Per the prototypes in /include/lab2-api.h the system calls related to
+locks are:
+- To create  : lock_create()
+- To acquire : lock_acquire()
+- To release : lock_release()
+
+# How is a semaphore created in DLXOS?
+Upon a user calling the sem_create system call the _sem_create trap in usertraps.s will be called.
+The _sem_create trap will execute the trap instruction with argument #450 (defined as TRAP_SEM_CREATE),
+the CPU registers are stored and then the code to handle the trap in trap.c starts execution. 
+In trap.c the function SemCreate in synch.c is called.
+
+The SemCreate function does the following:
+- Disable interrupts.
+- Loops over semaphore array to find slot not in use.
+	- If open slot found it is marked as in use and slot number recorded.
+- Interrupts reenabled.
+- If open slot not found then return a fail.
+- If open slot is found we return the slot number to the caller.
+
+# Explain how lock_acquire, lock_release, sem_signal, and sem_wait work.
+All four of these system calls follow a similar path to sem_create up until trap.c where
+lock_acquire, lock_release, sem_signal, and sem_wait call LockHandleAcquire, LockHandleRelease,
+SemHandleSignal, and SemHandleWait respectively. All four of these functions are defined in synch.c.
+
+LockHandleAcquire does the following:
+- Performs bounds checking on the lock caller wants.
+- Checks if lock has been allocated (in use).
+- If allocated calls LockAcquire.
+	- LockAcquire does the following:
+		- Disable interrups.
+		- Checks current process already owns the lock.
+			- If current process already owns lock return success.
+		- Checks if another process owns the lock.
+			- If another process already owns lock we do the following:
+				- Create a new lock queue link.
+				- Insert our new link into the lock's queue.
+				- Put our calling process to sleep.
+		- Once pass sleeping we must be next in line for lock.
+			- We put our PID in the locks PID field.
+		- Restore interrups.
+		- Return to caller with status success.
+
+LockHandleRelease does the following:
+- Performs bounds checking on the lock caller wants to release.
+- Checks if lock has been allocated (in use).
+- If allocated calls LockRelease.
+	- LockRelease does the following:
+		- Disables interrupts.
+		- Confirms caller owns the lock.
+		- Clears the lock PID.
+		- Checks for any waiting processes in the queue.
+			- If waiting processes we do the following:
+				- Remove the first waiting process from the queue.
+				- Give this process the lock.
+				- Wakeup the process.
+		- Restore interrupts.
+		- Return to the caller with success status.
+
+SemHandleSignal does the following:
+- Performs bounds checking on the semaphore caller wants to signal.
+- Checks if semaphore has been allocated (in use).
+- If allocated calls SemSignal.
+	- SemSignal does the following:
+		- Disables interrupts.
+		- Increments the semaphore count field.
+		- If semaphore is positive we check if anything is sleeping.
+		- If we find anything sleeping we wake up the process first in line.
+			- Decrement the count because this signal is immediately consumed.
+		- Restore interrupts.
+		- Return to the caller with status success.
+
+SemHandleWait does the following:
+- Performs bounds checking on the semaphore caller wants to wait on.
+- Checks if semaphore has been allocated (in use).
+- If allocated calls SemWait.
+	- SemWait does the following:
+		- Disables interrupts.
+		- Check semaphore value.
+		- If semaphore is negative we do the following:
+			- Create a new semaphore queue link.
+			- Insert our new link into the semaphore's queue.
+			- Put our calling process to sleep.
+		- If semaphore is positive we decrement it.
+		- Restore interrupts.
+		- Return to the caller with status success.
+
+# What is a handle and how is it used to access semaphores in DLXOS?
+DLXOS only allows so many synchronization primitives (locks, semaphores, etc.) to be allocated.
+DLXOS keeps track of how many primitives are allocated at any point in time.
+When many primitives are allocated process A needs a way to distinguish which primitive it is 
+refering to (i.e. if 10 semaphores are allocated which semaphore would process A like to signal/wait?).
+The handle is what process A uses to tell DLXOS which primitive it wants. 
+
+At the OS implementation level this is an index into the primitives array found in synch.c.
+
+At the application code level the handle is what a process uses to tell the OS it want semaphore A versus semaphore B.
