@@ -10,8 +10,8 @@ void main (int argc, char *argv[])
   uint32 h_mem;            // Handle to the shared memory page
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
   int res;
-  //depot p_depot;           // products that producer gives to consumer
   depot p_depot = {.index = 0, .nums = "0123456789"};
+  char product;
 
   if (argc != 3) {
     Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_t    o_page_mapped_semaphore>\n");
@@ -33,21 +33,34 @@ void main (int argc, char *argv[])
   Printf("spawn_me: PID %d is a producer process you created of a total %d.\n", Getpid(), buf->numprocs);
   //Printf("spawn_me: My PID is %d\n", Getpid());
 
-  // Producer "producing"
-  //p_depot.index = 0;
-  //p_depot.nums[0] = '7';
-  //p_depot = {.index = 0, .nums = "0123456789"};
+  //Starting point
   Printf("spawn_me: PID %d has index %d and data %d\n", Getpid(), p_depot.index, dstrtol(p_depot.nums, NULL, 10));
 
-  if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
-    Printf("spawn_me: PID %d could NOT get lock! Res: %d", Getpid(), res);
-  }
+  // keep trying to "produce" until we have emptied our depot
+  while(p_depot.index < 10){
+    // get item for consumer
+    product = p_depot.nums[p_depot.index]; 
 
-  Printf("spawn_me: PID %d got the lock!\n", Getpid());
-  lock_release(buf->lock);
+    // now we need to interact with shared memory, acquire lock
+    if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
+      Printf("spawn_me: PID %d could NOT get lock! Res: %d", Getpid(), res);
+    }
+    // lock acquired insert data and increment write index
+    buf->buffer[buf->w_idx] = product;
+    buf->w_idx = buf->w_idx + 1;
+    
+    // done interacting with shared memory, release lock
+    lock_release(buf->lock);
+    Printf("spawn_me: Producer %d inserted: %d\n", Getpid(), dstrtol(&product, NULL, 10));
+    //Printf("spawn_me: Producer %d index is: %d\n", Getpid(), p_depot.index);
+    p_depot.index = p_depot.index + 1;
+  } 
+
+  //Printf("spawn_me: PID %d got the lock!\n", Getpid());
+  //lock_release(buf->lock);
 
   // Signal the semaphore to tell the original process that we're done
-  Printf("spawn_me: PID %d is complete.\n", Getpid()); 
+  Printf("spawn_me: Producer %d is complete.\n", Getpid()); 
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) { 
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf(", exiting...\n"); 
     Exit(); 

@@ -3,6 +3,8 @@
 
 typedef struct shared_buffer{
   int numprocs;
+  int w_idx;
+  int r_idx;
   char buffer[100]; 	// fixed size because malloc not available!
   lock_t lock;
 } shared_buffer;
