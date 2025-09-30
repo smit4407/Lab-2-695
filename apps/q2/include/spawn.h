@@ -1,11 +1,13 @@
 #ifndef __USERPROG__
 #define __USERPROG__
 
+#define BUFFER_SIZE 10
+
 typedef struct shared_buffer{
   int numprocs;
   int w_idx;
   int r_idx;
-  char buffer[100]; 	// fixed size because malloc not available!
+  char buffer[BUFFER_SIZE]; 	// fixed size because malloc not available!
   lock_t lock;
 } shared_buffer;
 

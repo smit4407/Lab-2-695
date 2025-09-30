@@ -34,7 +34,7 @@ void main (int argc, char *argv[])
   //Printf("spawn_me: My PID is %d\n", Getpid());
 
   //Starting point
-  Printf("spawn_me: PID %d has index %d and data %d\n", Getpid(), p_depot.index, dstrtol(p_depot.nums, NULL, 10));
+  // Printf("spawn_me: PID %d has index %d and data %d\n", Getpid(), p_depot.index, dstrtol(p_depot.nums, NULL, 10));
 
   // keep trying to "produce" until we have emptied our depot
   while(p_depot.index < 10){
@@ -47,7 +47,7 @@ void main (int argc, char *argv[])
     }
     // lock acquired insert data and increment write index
     buf->buffer[buf->w_idx] = product;
-    buf->w_idx = buf->w_idx + 1;
+    buf->w_idx = (buf->w_idx + 1) % BUFFER_SIZE;
     
     // done interacting with shared memory, release lock
     lock_release(buf->lock);

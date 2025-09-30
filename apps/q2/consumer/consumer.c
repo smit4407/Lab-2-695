@@ -53,7 +53,7 @@ void main (int argc, char *argv[])
       // consume item and update index's
       if((buf->buffer[buf->r_idx]) == expected_item){
 	product = buf->buffer[buf->r_idx];
-	buf->r_idx = buf->r_idx + 1;
+	buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
 	lock_release(buf->lock);
 	c_depot.nums[c_depot.index] = product;
 	c_depot.index = c_depot.index + 1;

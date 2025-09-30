@@ -25,10 +25,10 @@ void main (int argc, char *argv[])
   // Convert string from ascii command line argument to integer number
   // Multiply by 2 because the command line arugment is number of producer consumer pairs
   numprocs = dstrtol(argv[1], NULL, 10) * 2; // the "10" means base 10
-  if(numprocs > 10){
-    Printf("ERROR: Max number of producer/consumer pairs you can make is 10.");
-    Exit();
-  }
+  // if(numprocs > 10){
+  //   Printf("ERROR: Max number of producer/consumer pairs you can make is 10.");
+  //   Exit();
+  // }
   Printf("Creating %d processes\n", numprocs);
 
   // Allocate space for a shared memory page, which is exactly 64KB
