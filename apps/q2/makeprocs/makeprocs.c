@@ -51,6 +51,7 @@ void main (int argc, char *argv[])
     Exit();
   }
   Printf("makeprocs: Lock created with handle: %d\n", l);
+  buf->lock = l;
   //if((res = lock_acquire(l)) == SYNC_FAIL){
   //  Printf("ERROR: Failed to acquire lock! Res: %d\n");
   //  Exit();

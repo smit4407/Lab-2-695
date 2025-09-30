@@ -45,6 +45,11 @@ void main (int argc, char *argv[])
     if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
       Printf("spawn_me: PID %d could NOT get lock! Res: %d", Getpid(), res);
     }
+    if(((buf->w_idx + 1) % BUFFER_SIZE) == buf->r_idx){
+    	// circular buffer is full do not write to it
+	lock_release(buf->lock);
+    }
+    else{
     // lock acquired insert data and increment write index
     buf->buffer[buf->w_idx] = product;
     buf->w_idx = (buf->w_idx + 1) % BUFFER_SIZE;
@@ -54,6 +59,7 @@ void main (int argc, char *argv[])
     Printf("spawn_me: Producer %d inserted: %d\n", Getpid(), dstrtol(&product, NULL, 10));
     //Printf("spawn_me: Producer %d index is: %d\n", Getpid(), p_depot.index);
     p_depot.index = p_depot.index + 1;
+    }
   } 
 
   //Printf("spawn_me: PID %d got the lock!\n", Getpid());
