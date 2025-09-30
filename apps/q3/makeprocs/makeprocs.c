@@ -72,6 +72,15 @@ void main (int argc, char *argv[])
     Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
     Exit();
   }
+  if ((buf->s_fullslots = sem_create(0)) == SYNC_FAIL) {
+    Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
+    Exit();
+  }
+  if ((buf->s_emptyslots = sem_create(BUFFER_SIZE)) == SYNC_FAIL) {
+    Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
+    Exit();
+  }
+  Printf("argv[0] = "); Printf(argv[0]); Printf("\n");
 
   // Setup the command-line arguments for the new process.  We're going to
   // pass the handles to the shared memory page and the semaphore as strings
