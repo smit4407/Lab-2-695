@@ -9,7 +9,6 @@ void main (int argc, char *argv[])
   int numprocs = 0;               // Used to store number of processes to create
   int i;                          // Loop index variable
   shared_buffer *buf;   	  // Used to get address of shared memory page
-				  // Hard coded to hold 100 char's because do not have malloc
   lock_t l;
   int res;
   uint32 h_mem;                   // Used to hold handle to shared memory page
@@ -58,9 +57,9 @@ void main (int argc, char *argv[])
   //}
   //Printf("makeprocs: Lock acquired!\n");
 
-  // Put some values in the shared memory, to be read by other processes
   buf->numprocs = numprocs;
-  //buf->really_important_char = 'A';
+  buf->w_idx = 0;
+  buf->r_idx = 0;
 
   // Create semaphore to not exit this process until all other processes 
   // have signalled that they are complete.  To do this, we will initialize
@@ -72,6 +71,15 @@ void main (int argc, char *argv[])
     Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
     Exit();
   }
+  if ((buf->s_fullslots = sem_create(0)) == SYNC_FAIL) {
+    Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
+    Exit();
+  }
+  if ((buf->s_emptyslots = sem_create(BUFFER_SIZE)) == SYNC_FAIL) {
+    Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
+    Exit();
+  }
+  Printf("argv[0] = "); Printf(argv[0]); Printf("\n");
 
   // Setup the command-line arguments for the new process.  We're going to
   // pass the handles to the shared memory page and the semaphore as strings

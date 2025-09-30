@@ -38,23 +38,24 @@ void main (int argc, char *argv[])
     ditoa(c_depot.index, &expected_item);
     // Printf("spawn_me: PID %d expected item: %d\n", Getpid(), dstrtol(&expected_item, NULL, 10));
     
-    // Busy checking for produced data
-    // first thing we must do is get lock
+    //sem_wait(buf->s_fullslots);
     if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
       Printf("spawn_me: PID %d could NOT get lock! Res: %d\n", Getpid(), res);
     }
     // Buffer is empty
-    if((buf->w_idx) == (buf->r_idx)){
-      lock_release(buf->lock);
-      // Printf("spawn_me: PID %d found empty buffer.\n", Getpid());
-    }
-    else{
+    //if((buf->w_idx) == (buf->r_idx)){
+    //  lock_release(buf->lock);
+    //  // Printf("spawn_me: PID %d found empty buffer.\n", Getpid());
+    //}
+    //else{
       // Head of buffer has what we are looking for
       // consume item and update index's
       if((buf->buffer[buf->r_idx]) == expected_item){
+	sem_wait(buf->s_fullslots);
 	product = buf->buffer[buf->r_idx];
 	buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
 	lock_release(buf->lock);
+        sem_signal(buf->s_emptyslots);
 	c_depot.nums[c_depot.index] = product;
 	c_depot.index = c_depot.index + 1;
 	//Printf("spawn_me: Consumer %d removed: %d\n", Getpid(), dstrtol(&product, 1, 10));
@@ -65,10 +66,10 @@ void main (int argc, char *argv[])
       // so release lock so another consumer can get item
       else{
         lock_release(buf->lock);
-        // Printf("spawn_me: PID %d did not find what it was looking for.\n", Getpid());
+        Printf("spawn_me: PID %d did not find what it was looking for.\n", Getpid());
       }
     }
-  }
+  //}
 
   //Printf("spawn_me: PID %d got the lock!\n", Getpid());
   //lock_release(buf->lock);

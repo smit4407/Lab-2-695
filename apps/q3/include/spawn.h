@@ -9,6 +9,8 @@ typedef struct shared_buffer{
   int r_idx;
   char buffer[BUFFER_SIZE]; 	// fixed size because malloc not available!
   lock_t lock;
+  sem_t s_fullslots;
+  sem_t s_emptyslots;
 } shared_buffer;
 
 typedef struct depot{
