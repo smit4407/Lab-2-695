@@ -38,7 +38,7 @@ void main (int argc, char *argv[])
     ditoa(c_depot.index, &expected_item);
     // Printf("spawn_me: PID %d expected item: %d\n", Getpid(), dstrtol(&expected_item, NULL, 10));
     
-    sem_wait(buf->s_fullslots);
+    //sem_wait(buf->s_fullslots);
     if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
       Printf("spawn_me: PID %d could NOT get lock! Res: %d\n", Getpid(), res);
     }
@@ -51,6 +51,7 @@ void main (int argc, char *argv[])
       // Head of buffer has what we are looking for
       // consume item and update index's
       if((buf->buffer[buf->r_idx]) == expected_item){
+	sem_wait(buf->s_fullslots);
 	product = buf->buffer[buf->r_idx];
 	buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
 	lock_release(buf->lock);

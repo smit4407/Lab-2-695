@@ -9,7 +9,6 @@ void main (int argc, char *argv[])
   int numprocs = 0;               // Used to store number of processes to create
   int i;                          // Loop index variable
   shared_buffer *buf;   	  // Used to get address of shared memory page
-				  // Hard coded to hold 100 char's because do not have malloc
   lock_t l;
   int res;
   uint32 h_mem;                   // Used to hold handle to shared memory page
