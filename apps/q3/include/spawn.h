@@ -1,7 +1,7 @@
 #ifndef __USERPROG__
 #define __USERPROG__
 
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 32
 
 typedef struct shared_buffer{
   int numprocs;
