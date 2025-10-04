@@ -13,6 +13,7 @@
 
 static Sem sems[MAX_SEMS]; 	// All semaphores in the system
 static Lock locks[MAX_LOCKS];   // All locks in the system
+static Cond conds[MAX_CONDS];   // All conds in the system
 
 extern struct PCB *currentPCB; 
 //----------------------------------------------------------------------
@@ -28,9 +29,11 @@ int SynchModuleInit() {
   }
   for(i=0; i<MAX_LOCKS; i++) {
     // Your stuff for initializing locks goes here
+    locks[i].inuse = 0;
   }
   for(i=0; i<MAX_CONDS; i++) {
     // Your stuff for initializing Condition variables goes here
+    conds[i].inuse = 0;
   }
   dbprintf ('p', "SynchModuleInit: Leaving SynchModuleInit\n");
   return SYNC_SUCCESS;
@@ -371,8 +374,38 @@ int LockTransfer(Lock *k, PCB *pcb) {
 //	should return handle of the condition variable.
 //--------------------------------------------------------------------------
 cond_t CondCreate(lock_t lock) {
-  // Your code goes here
-  return SYNC_FAIL;
+  uint32 intrval;
+  cond_t c;
+
+  // disable inter
+  intrval = DisableIntrs();
+
+  if (lock >= MAX_LOCKS || lock < 0 || locks[lock].inuse == 0){
+    RestoreIntrs(intrval);
+    return INVALID_COND;
+  }
+
+  for(c=0; c<MAX_CONDS; c++) {
+    if(conds[c].inuse==0) {
+      break;
+    }
+  }
+
+  if (c==MAX_CONDS) {
+    RestoreIntrs(intrval);
+    return INVALID_COND;
+  }
+
+  conds[c].inuse = 1;
+  conds[c].lock = lock;
+
+  if (AQueueInit (&c.waiting) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not initialize lock waiting queue in CondCreate!\n");
+    exitsim();
+  }
+
+  RestoreIntrs(intrval);
+  return c;
 }
 
 //---------------------------------------------------------------------------
@@ -398,7 +431,39 @@ cond_t CondCreate(lock_t lock) {
 //---------------------------------------------------------------------------
 int CondHandleWait(cond_t c) {
   // Your code goes here
-  return SYNC_SUCCESS;
+  uint32 intrval;
+  Link *l;
+  lock_t lock;
+
+  if (c >= MAX_CONDS || c < 0 || conds[c].inuse == 0) {
+    return 1;
+  }
+  intrval = DisableIntrs();
+  lock = conds[c].lock;
+
+  if (locks[lock].pid != GetCurrentPid()) {
+    RestoreIntrs(intrval);
+    return 1;
+  }
+
+  if (LockHandleRelease(lock) != SYNC_SUCCESS) {
+    printf("FATAL ERROR: could not release lock in CondHandleWait!\n");
+    exitsim();
+  }
+
+  if ((l = AQueueAllocLink ((void *)currentPCB)) == NULL) {
+    printf("FATAL ERROR: could not allocate link for CV queue in CondHandleWait!\n");
+    exitsim();
+  }
+
+  if (AQueueInsertLast (&conds[c].waiting, l) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not insert link into CV waiting queue in CondHandleWait!\n");
+    exitsim();
+  }
+
+  ProcessSleep();
+  RestoreIntrs(intrval);
+  return 0;
 }
 
 
@@ -418,6 +483,50 @@ int CondHandleWait(cond_t c) {
 //	wakes up again, since it is still in the critical section.
 //---------------------------------------------------------------------------
 int CondHandleSignal(cond_t c) {
-  // Your code goes here
+  uint32 intrval;
+  Link *firstL;
+  lock_t lock;
+  Link *l;
+  PCB *pcb;
+
+  if (c >= MAX_CONDS || c < 0 || conds[c].inuse == 0) {
+    return 1;
+  }
+  intrval = DisableIntrs();
+  lock = conds[c].lock;
+  
+  if (locks[lock].pid != GetCurrentPid()) {
+    RestoreIntrs(intrval);
+    return 1;
+  }
+
+  if (AQueueEmpty(&conds[c].waiting)) {
+    RestoreIntrs(intrval);
+    return 0;
+  }
+
+  firstL = AQueueFirst(&conds[c].waiting);
+  pcb = (PCB *)AQueueObject(firstL);
+  if (AQueueRemove(&firstL) != QUEUE_SUCCESS) { 
+    printf("FATAL ERROR: could not remove link from CV queue in CondHandleSignal!\n");
+    exitsim();
+  }
+
+  //transfer lock
+  locks[lock].pid = (int)(GetPidFromAddress(pcb))
+
+  ProcessWakeup (pcb);
+
+  if ((l = AQueueAllocLink ((void *)currentPCB)) == NULL) {
+    printf("FATAL ERROR: could not allocate link in CondHandleSignal!\n");
+    exitsim();
+  }
+  if (AQueueInsertLast (&locks[lock].waiting, l) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not insert new link into lock waiting queue in CondHandleSignal!\n");
+    exitsim();
+  }
+
+  ProcessSleep()
+  RestoreIntrs(intrval);
   return SYNC_SUCCESS;
 }
