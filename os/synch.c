@@ -399,7 +399,7 @@ cond_t CondCreate(lock_t lock) {
   conds[c].inuse = 1;
   conds[c].lock = lock;
 
-  if (AQueueInit (&c.waiting) != QUEUE_SUCCESS) {
+  if (AQueueInit (&conds[c].waiting) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not initialize lock waiting queue in CondCreate!\n");
     exitsim();
   }
@@ -513,7 +513,7 @@ int CondHandleSignal(cond_t c) {
   }
 
   //transfer lock
-  locks[lock].pid = (int)(GetPidFromAddress(pcb))
+  locks[lock].pid = (int)(GetPidFromAddress(pcb));
 
   ProcessWakeup (pcb);
 
@@ -526,7 +526,7 @@ int CondHandleSignal(cond_t c) {
     exitsim();
   }
 
-  ProcessSleep()
+  ProcessSleep();
   RestoreIntrs(intrval);
   return SYNC_SUCCESS;
 }
