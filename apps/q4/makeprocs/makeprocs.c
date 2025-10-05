@@ -11,7 +11,7 @@ void main (int argc, char *argv[])
   shared_buffer *buf;   	  // Used to get address of shared memory page
 				  // Hard coded to hold 100 char's because do not have malloc
   lock_t l;
-  int res;
+  cond_t c;
   uint32 h_mem;                   // Used to hold handle to shared memory page
   sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
   char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
@@ -52,15 +52,23 @@ void main (int argc, char *argv[])
   }
   Printf("makeprocs: Lock created with handle: %d\n", l);
   buf->lock = l;
-  //if((res = lock_acquire(l)) == SYNC_FAIL){
-  //  Printf("ERROR: Failed to acquire lock! Res: %d\n");
-  //  Exit();
-  //}
-  //Printf("makeprocs: Lock acquired!\n");
+  
+  // Create conditional variables using newly created lock
+  if ((c = cond_create(l)) == SYNC_FAIL){
+    Printf("ERROR: Could not create conditional variable! Exiting.\n");
+    Exit();
+  }
+  buf->not_full = c;
+  if ((c = cond_create(l)) == SYNC_FAIL){
+    Printf("ERROR: Could not create conditional variable! Exiting.\n");
+    Exit();
+  }
+  buf->not_empty = c;
 
   // Put some values in the shared memory, to be read by other processes
   buf->numprocs = numprocs;
-  //buf->really_important_char = 'A';
+  buf->w_idx = 0;
+  buf->r_idx = 0;
 
   // Create semaphore to not exit this process until all other processes 
   // have signalled that they are complete.  To do this, we will initialize
@@ -91,8 +99,6 @@ void main (int argc, char *argv[])
     process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
     Printf("makeprocs: Producer %d created\n", i);
   }
-
-  //lock_release(buf->lock);
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {

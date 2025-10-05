@@ -12,4 +12,4 @@ run:
 	cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 3; ee469_fixterminal
 
 db:
-	cd ../../bin; dlxsim -x os.dlx.obj -a -D p -u makeprocs.dlx.obj 3; ee469_fixterminal
+	cd ../../bin; dlxsim -x os.dlx.obj -a -D s -u makeprocs.dlx.obj 3; ee469_fixterminal
