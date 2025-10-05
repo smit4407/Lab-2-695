@@ -91,13 +91,13 @@ void main (int argc, char *argv[])
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
   for(i=0; i<(numprocs/2); i++) {
-    process_create(CONSUMER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
-    Printf("makeprocs: Consumer %d created\n", i);
+    process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
+    Printf("makeprocs: Producer %d created\n", i);
   }
 
   for(i=0; i<(numprocs/2); i++) {
-    process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
-    Printf("makeprocs: Producer %d created\n", i);
+    process_create(CONSUMER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
+    Printf("makeprocs: Consumer %d created\n", i);
   }
 
   // And finally, wait until all spawned processes have finished.

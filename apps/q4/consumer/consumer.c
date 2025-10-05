@@ -44,11 +44,21 @@ void main (int argc, char *argv[])
       Printf("consumer: PID %d could NOT get lock! Res: %d\n", Getpid(), res);
     }
     // Check empty buffer and head character is what we need
-    if((buf->w_idx) == (buf->r_idx) || (buf->buffer[buf->r_idx] != expected_item)){
-      if(buf->w_idx == buf->r_idx){ Printf("consumer: PID %d found empty buffer.\n", Getpid()); }
-      if(buf->buffer[buf->r_idx] != expected_item){ Printf("consumer: PID %d expected %d not found. Head has %d\n", Getpid(), expected_item - '0', (buf->buffer[buf->r_idx]) - '0'); }
+   // if((buf->w_idx) == (buf->r_idx) || (buf->buffer[buf->r_idx] != expected_item)){
+   //   if(buf->w_idx == buf->r_idx){ Printf("consumer: PID %d found empty buffer.\n", Getpid()); }
+   //   if(buf->buffer[buf->r_idx] != expected_item){ Printf("consumer: PID %d expected %d not found. Head has %d\n", Getpid(), expected_item - '0', (buf->buffer[buf->r_idx]) - '0'); }
+   //   cond_wait(buf->not_empty);
+   // }
+   
+    if(buf->w_idx == buf->r_idx){
+      Printf("consumer: PID %d found empty buffer.\n", Getpid());
       cond_wait(buf->not_empty);
     }
+    if(buf->buffer[buf->r_idx] != expected_item){
+      Printf("consumer: PID %d expected %d not found. Head has %d\n", Getpid(), expected_item - '0', (buf->buffer[buf->r_idx]) - '0');
+    }
+
+    else{   
 
     // Printf("consumer: PID %d has passed it's while loop.\n", Getpid());
     // Head of buffer has what we are looking for
@@ -57,7 +67,6 @@ void main (int argc, char *argv[])
     buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
     Printf("Consumer %d removed: %d\n", Getpid(), (product - '0'));
     cond_signal(buf->not_full);
-    lock_release(buf->lock);
     c_depot.nums[c_depot.index] = product;
     c_depot.index = c_depot.index + 1;
     Printf("consumer: Consumer %d end of loop has index %d and data %d.\n", Getpid(), c_depot.index, dstrtol(c_depot.nums, NULL, 10)); 
@@ -66,6 +75,8 @@ void main (int argc, char *argv[])
     // Head of buffer does not have what we are looking for
     // so release lock so another consumer can get item
     // Printf("consumer: PID %d did not find what it was looking for.\n", Getpid());
+    }
+    lock_release(buf->lock);
   }
 
   //Printf("consumer: PID %d got the lock!\n", Getpid());
