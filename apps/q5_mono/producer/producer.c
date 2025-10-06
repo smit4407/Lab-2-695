@@ -31,7 +31,7 @@ void main (int argc, char *argv[])
  
   // Now print a message to show that everything worked
   //Printf("spawn_me: This producer is one of the %d processes you created.\n", buf->numprocs);
-  Printf("n3_injector: PID %d is the N3 injector process.\n", Getpid());
+  Printf("injector: PID %d is an injector process. Injection count %d\n", Getpid(), inj_count);
 
   //Starting point
   // Printf("spawn_me: PID %d has index %d and data %d\n", Getpid(), p_depot.index, dstrtol(p_depot.nums, NULL, 10));
@@ -53,7 +53,7 @@ void main (int argc, char *argv[])
   } 
 
   // Signal the semaphore to tell the original process that we're done
-  Printf("n3_injector: n3_injector is complete.\n", Getpid()); 
+  Printf("injector: PID %d is complete.\n", Getpid()); 
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) { 
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf(", exiting...\n"); 
     Exit(); 

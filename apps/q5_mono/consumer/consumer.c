@@ -30,7 +30,7 @@ void main (int argc, char *argv[])
   }
  
   // Now print a message to show that everything worked
-  Printf("reaction: PID %d is a reaction 1 process.\n", Getpid());
+  Printf("reaction: PID %d is a reaction process. Expected reactions %d\n", Getpid(), expected_reactions);
   
   while(expected_reactions > 0){
     Printf("reaction: An N molecule is created\n");
@@ -38,7 +38,7 @@ void main (int argc, char *argv[])
   }
 
   // Signal the semaphore to tell the original process that we're done
-  Printf("reaction: reaction is complete.\n", Getpid()); 
+  Printf("reaction: PID %d is complete.\n", Getpid()); 
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) { 
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf(", exiting...\n"); 
     Exit(); 

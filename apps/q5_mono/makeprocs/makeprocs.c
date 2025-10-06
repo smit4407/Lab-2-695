@@ -148,7 +148,7 @@ void main (int argc, char *argv[])
     char i_str[10];
     ditoa(i, i_str);
     if(i != 3){
-      process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, i_str, expected_reactions_str[i], NULL);
+      process_create(CONSUMER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, i_str, expected_reactions_str[i-2], NULL);
     }
   //Printf("makeprocs: reaction1 created.\n");
   }
