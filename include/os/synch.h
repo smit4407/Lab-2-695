@@ -1,5 +1,16 @@
+//
+//	synch.h
+//
+//	Include file for synchronization stuff.  The synchronization
+//	primitives include:
+//	Semaphore
+//	Lock
+//	Condition
+//
+//	Semaphores are the only "native" synchronization primitive.
+//	Condition variables and locks are implemented using semaphores.
+//
 
-<<<<<<< HEAD
 #ifndef	_synch_h_
 #define	_synch_h_
 
@@ -68,5 +79,3 @@ int CondHandleWait(cond_t cond);
 int CondHandleSignal(cond_t cond);
 
 #endif	//_synch_h_
-=======
->>>>>>> 75cb3cda6e8d6a54714a42da2c686342c2c3a7b6
