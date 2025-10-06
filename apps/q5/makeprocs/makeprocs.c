@@ -7,58 +7,52 @@
 void main (int argc, char *argv[])
 {
   int numprocs = 0;               // Used to store number of processes to create
-  int i;                          // Loop index variable
-  t_atmosphere *atmosphere;   	  // Used to get address of shared memory page
-				  // Hard coded to hold 100 char's because do not have malloc
+  t_atmosphere *atmosphere;   	 
   sem_t s;
-  int n3_count;			  // Number of n3 molecules user inputs. Passed to injector.
-  int h2o_count;		  // Number of h2o molecules user inputs. Passed to injector.
-  int expected_reactions_1;        // Expected number of type 1 reactions.
-  int expected_reactions_2;       // Expected number of type 2 reactions.
-  int expected_reactions_3;      // Expected number of type 3 reactions.
+  int i;
+  int inj_count[2];
+  int expected_reactions[3];
   uint32 h_mem;                   // Used to hold handle to shared memory page
   sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
   char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
   char s_procs_completed_str[10]; // Used as command-line argument to pass page_mapped handle to new processes
-  char n3_count_str[10];
-  char h2o_count_str[10];
-  char expected_reactions_1_str[10];
-  char expected_reactions_2_str[10];
-  char expected_reactions_3_str[10];
+  char inj_count_str[2][10];
+  char expected_reactions_str[2][10];
+  int  inj_idx;
+  int  reaction_idx;
+  char inj_idx_str[10];
+  char reaction_idx_str[10];
 
   if (argc != 3) {
     Printf("Usage: "); Printf(argv[0]); Printf("<number of N3 molecules> <number of H20 molecules>\n");
     Exit();
   }
 
-  // Convert string from ascii command line argument to integer number
-  // Multiply by 2 because the command line arugment is number of producer consumer pairs
-  // numprocs = dstrtol(argv[1], NULL, 10) * 2; // the "10" means base 10
-  // Printf("Creating %d processes\n", numprocs);
   
   // Hard coding this to 5 because there will always be two "injectors" 
   // processes and three "reactions" processes.
-  //numprocs = 5;
-  numprocs = 2;
-  n3_count = dstrtol(argv[1], NULL, 10);
-  Printf("makeprocs: Number of N3 molecules available %d\n", n3_count);
-  h2o_count = dstrtol(argv[1], NULL, 10);
-  Printf("makeprocs: Number of H20 molecules available %d\n", h2o_count);
+  numprocs = 5;
+  // Printf("Creating %d processes\n", numprocs);
+ 
+  inj_count[I_N3] = dstrtol(argv[1], NULL, 10);
+  //Printf("makeprocs: Number of N3 molecules available %d\n", inj_count[I_N3]);
+  inj_count[I_H2O] = dstrtol(argv[2], NULL, 10);
+  //Printf("makeprocs: Number of H20 molecules available %d\n", inj_count[I_H2O]);
 
-  // The number of N3->N+N+N reactions is simply the number of N3 molecules present.
-  expected_reactions_1 = n3_count;
-  // The number of 2H2O->2H2+O2 reactions is the result of (h2o_count/2).
-  expected_reactions_2 = h2o_count / 2;
-  // The number of N+O2->NO2 reactions is the smaller value of (3*n3_count) and (h2o_count/2).
-  if((3*n3_count)>expected_reactions_2){
-    expected_reactions_3 = expected_reactions_2;
+  // Reaction 1 is equal to the number of N3 molecules present.
+  expected_reactions[R1] = inj_count[I_N3];
+  // Reaction 2 is equal to half the number of H2O molecules present.
+  expected_reactions[R2] = inj_count[I_H2O] / 2;
+  // Reaction 3 is equal to the smaller of N versus O2 in atmosphere after other reactions occur.
+  if((3*inj_count[I_N3])>expected_reactions[R2]){
+    expected_reactions[R3] = expected_reactions[R2];
   }
   else{ 
-    expected_reactions_3 = (3*n3_count);
+    expected_reactions[R3] = (3*inj_count[I_N3]);
   }
-  Printf("makeprocs: Expected number of type 1 reactions are %d\n", expected_reactions_1);
-  Printf("makeprocs: Expected number of type 2 reactions are %d\n", expected_reactions_2);
-  Printf("makeprocs: Expected number of type 3 reactions are %d\n", expected_reactions_3);
+  // Printf("makeprocs: Expected number of type 1 reactions are %d\n", expected_reactions[R1]);
+  // Printf("makeprocs: Expected number of type 2 reactions are %d\n", expected_reactions[R2]);
+  // Printf("makeprocs: Expected number of type 3 reactions are %d\n", expected_reactions[R3]);
 
   // Allocate space for a shared memory page, which is exactly 64KB
   // Note that it doesn't matter how much memory we actually need: we 
@@ -76,38 +70,13 @@ void main (int argc, char *argv[])
 
   // Create and init a semaphore and put it into shared memory
   // Init with 0 because we start with empty atmosphere
-  if ((s = sem_create(0)) == SYNC_FAIL){
-    Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
-    Exit();
+  for(i=0; i<6; i++){
+    if ((s = sem_create(0)) == SYNC_FAIL){
+      Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
+      Exit();
+    }
+    atmosphere->molecules[i] = s;
   }
-  atmosphere->n3 = s;
-  if ((s = sem_create(0)) == SYNC_FAIL){
-    Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
-    Exit();
-  }
-  atmosphere->n = s;
-  if ((s = sem_create(0)) == SYNC_FAIL){
-    Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
-    Exit();
-  }
-  atmosphere->h2o = s;
-  if ((s = sem_create(0)) == SYNC_FAIL){
-    Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
-    Exit();
-  }
-  atmosphere->h2 = s;
-  if ((s = sem_create(0)) == SYNC_FAIL){
-    Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
-    Exit();
-  }
-  atmosphere->o2 = s;
-  if ((s = sem_create(0)) == SYNC_FAIL){
-    Printf("ERROR: makeprocs: Could not create semaphore! Exiting.\n");
-    Exit();
-  }
-  atmosphere->no2 = s;
-
-  //atmosphere->numprocs = 5;
 
   // Create semaphore to not exit this process until all other processes 
   // have signalled that they are complete.  To do this, we will initialize
@@ -125,20 +94,26 @@ void main (int argc, char *argv[])
   // on the command line, so we must first convert them from ints to strings.
   ditoa(h_mem, h_mem_str);
   ditoa(s_procs_completed, s_procs_completed_str);
-  ditoa(n3_count, n3_count_str);
-  ditoa(h2o_count, h2o_count_str);
-  ditoa(expected_reactions_1, expected_reactions_1_str);
-  ditoa(expected_reactions_2, expected_reactions_2_str);
-  ditoa(expected_reactions_3, expected_reactions_3_str);
+  ditoa(inj_count[I_N3], inj_count_str[I_N3]);
+  ditoa(inj_count[I_H2O], inj_count_str[I_H2O]);
+  ditoa(expected_reactions[R1], expected_reactions_str[R1]);
+  ditoa(expected_reactions[R2], expected_reactions_str[R2]);
+  ditoa(expected_reactions[R3], expected_reactions_str[R3]);
 
   // Now we can create the processes.  Note that you MUST end your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
-  process_create(N3_INJECTOR_FILE_TO_RUN, h_mem_str, s_procs_completed_str, n3_count_str, NULL);
-  //Printf("makeprocs: n3_injector created\n");
-
-  process_create(REACTION1_FILE_TO_RUN, h_mem_str, s_procs_completed_str, expected_reactions_1_str, NULL);
+  for(inj_idx=0; inj_idx<2; inj_idx++){
+    ditoa(inj_idx, inj_idx_str);
+    process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, inj_idx_str, inj_count_str[inj_idx], NULL);
   //Printf("makeprocs: reaction1 created.\n");
+  }
+
+  for(reaction_idx=0; reaction_idx<3; reaction_idx++){
+    ditoa(reaction_idx, reaction_idx_str);
+    process_create(CONSUMER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, reaction_idx_str, expected_reactions_str[reaction_idx], NULL);
+  //Printf("makeprocs: reaction1 created.\n");
+  }
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
