@@ -6,12 +6,8 @@
 # this way because the build procedure for all apps is basically the same.
 
 
-# SRCS=producer.c
-# EXEC=producer.dlx.obj
-# SRCS=n3_injector.c h2o_injector.c
-# EXEC=n3_injector.dlx.obj h2o_injector.dlx.obj
-SRCS=n3_injector.c
-EXEC=n3_injector.dlx.obj
+SRCS=producer.c
+EXEC=producer.dlx.obj
 
 include ../Makerules
 
