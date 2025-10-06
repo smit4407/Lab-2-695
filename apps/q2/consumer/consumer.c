@@ -30,13 +30,10 @@ void main (int argc, char *argv[])
   }
  
   // Now print a message to show that everything worked
-  //Printf("spawn_me: This consumer is one of the %d processes you created.\n", buf->numprocs);
-  Printf("spawn_me: PID %d is a consumer process you created of a total %d.\n", Getpid(), buf->numprocs);
-  //Printf("spawn_me: My PID is %d\n", Getpid());
+  // Printf("consumer: PID %d is a consumer process you created of a total %d.\n", Getpid(), buf->numprocs);
   
   while(c_depot.index < 10){
     ditoa(c_depot.index, &expected_item);
-    // Printf("spawn_me: PID %d expected item: %d\n", Getpid(), dstrtol(&expected_item, NULL, 10));
     
     // Busy checking for produced data
     // first thing we must do is get lock
@@ -49,17 +46,16 @@ void main (int argc, char *argv[])
       // Printf("spawn_me: PID %d found empty buffer.\n", Getpid());
     }
     else{
-      // Head of buffer has what we are looking for
-      // consume item and update index's
+      // Check if head of buffer has what we are looking for
       if((buf->buffer[buf->r_idx]) == expected_item){
+        // consume item and update index's
 	product = buf->buffer[buf->r_idx];
 	buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
 	lock_release(buf->lock);
 	c_depot.nums[c_depot.index] = product;
 	c_depot.index = c_depot.index + 1;
-	//Printf("spawn_me: Consumer %d removed: %d\n", Getpid(), dstrtol(&product, 1, 10));
 	// Using subtraction trick because dstrtol needs null terminated string
-	Printf("spawn_me: Consumer %d removed: %d\n", Getpid(), (product - '0'));
+	Printf("Consumer %d removed: %d\n", Getpid(), (product - '0'));
       }
       // Head of buffer does not have what we are looking for
       // so release lock so another consumer can get item
@@ -70,11 +66,8 @@ void main (int argc, char *argv[])
     }
   }
 
-  //Printf("spawn_me: PID %d got the lock!\n", Getpid());
-  //lock_release(buf->lock);
-
   // Signal the semaphore to tell the original process that we're done
-  Printf("spawn_me: Consumer %d is complete.\n", Getpid()); 
+  // Printf("Consumer %d is complete.\n", Getpid()); 
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) { 
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf(", exiting...\n"); 
     Exit(); 

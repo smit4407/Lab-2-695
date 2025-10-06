@@ -9,9 +9,7 @@ void main (int argc, char *argv[])
   int numprocs = 0;               // Used to store number of processes to create
   int i;                          // Loop index variable
   shared_buffer *buf;   	  // Used to get address of shared memory page
-				  // Hard coded to hold 100 char's because do not have malloc
   lock_t l;
-  int res;
   uint32 h_mem;                   // Used to hold handle to shared memory page
   sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
   char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
@@ -25,10 +23,6 @@ void main (int argc, char *argv[])
   // Convert string from ascii command line argument to integer number
   // Multiply by 2 because the command line arugment is number of producer consumer pairs
   numprocs = dstrtol(argv[1], NULL, 10) * 2; // the "10" means base 10
-  // if(numprocs > 10){
-  //   Printf("ERROR: Max number of producer/consumer pairs you can make is 10.");
-  //   Exit();
-  // }
   Printf("Creating %d processes\n", numprocs);
 
   // Allocate space for a shared memory page, which is exactly 64KB
@@ -50,17 +44,11 @@ void main (int argc, char *argv[])
     Printf("ERROR: Could not create lock! Exiting.\n");
     Exit();
   }
-  Printf("makeprocs: Lock created with handle: %d\n", l);
+  // Printf("makeprocs: Lock created with handle: %d\n", l);
   buf->lock = l;
-  //if((res = lock_acquire(l)) == SYNC_FAIL){
-  //  Printf("ERROR: Failed to acquire lock! Res: %d\n");
-  //  Exit();
-  //}
-  //Printf("makeprocs: Lock acquired!\n");
 
   // Put some values in the shared memory, to be read by other processes
   buf->numprocs = numprocs;
-  //buf->really_important_char = 'A';
 
   // Create semaphore to not exit this process until all other processes 
   // have signalled that they are complete.  To do this, we will initialize
@@ -91,8 +79,6 @@ void main (int argc, char *argv[])
     process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
     Printf("makeprocs: Producer %d created\n", i);
   }
-
-  //lock_release(buf->lock);
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
