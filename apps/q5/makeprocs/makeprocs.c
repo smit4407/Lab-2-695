@@ -20,6 +20,11 @@ void main (int argc, char *argv[])
   sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
   char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
   char s_procs_completed_str[10]; // Used as command-line argument to pass page_mapped handle to new processes
+  char n3_count_str[10];
+  char h2o_count_str[10];
+  char expected_reactions_1_str[10];
+  char expected_reactions_2_str[10];
+  char expected_reactions_3_str[10];
 
   if (argc != 3) {
     Printf("Usage: "); Printf(argv[0]); Printf("<number of N3 molecules> <number of H20 molecules>\n");
@@ -120,16 +125,20 @@ void main (int argc, char *argv[])
   // on the command line, so we must first convert them from ints to strings.
   ditoa(h_mem, h_mem_str);
   ditoa(s_procs_completed, s_procs_completed_str);
+  ditoa(n3_count, n3_count_str);
+  ditoa(h2o_count, h2o_count_str);
+  ditoa(expected_reactions_1, expected_reactions_1_str);
+  ditoa(expected_reactions_2, expected_reactions_2_str);
+  ditoa(expected_reactions_3, expected_reactions_3_str);
 
   // Now we can create the processes.  Note that you MUST end your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
-  Printf("makeprocs: trying to make injector\n");
-  process_create(N3_INJECTOR_FILE_TO_RUN, h_mem_str, s_procs_completed_str, n3_count, NULL);
-  Printf("makeprocs: n3_injector created\n");
+  process_create(N3_INJECTOR_FILE_TO_RUN, h_mem_str, s_procs_completed_str, n3_count_str, NULL);
+  //Printf("makeprocs: n3_injector created\n");
 
-  process_create(REACTION1_FILE_TO_RUN, h_mem_str, s_procs_completed_str, expected_reactions_1, NULL);
-  Printf("makeprocs: reaction1 created.\n");
+  process_create(REACTION1_FILE_TO_RUN, h_mem_str, s_procs_completed_str, expected_reactions_1_str, NULL);
+  //Printf("makeprocs: reaction1 created.\n");
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {

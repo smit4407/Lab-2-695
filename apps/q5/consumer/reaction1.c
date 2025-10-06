@@ -11,8 +11,8 @@ void main (int argc, char *argv[])
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
   int expected_reactions_1;
 
-  if (argc != 3) {
-    Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_t    o_page_mapped_semaphore> <expected_reactions_1>\n");
+  if (argc != 4) {
+    Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_to_page_mapped_semaphore> <expected_reactions_1>\n");
     Exit();
   } 
 
