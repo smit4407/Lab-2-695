@@ -1,8 +1,6 @@
 #ifndef __USERPROG__
 #define __USERPROG__
 
-#define BUFFER_SIZE 32
-
 #define N3  0
 #define H2O 1
 #define N   2
@@ -30,11 +28,6 @@ typedef struct t_atmosphere{
   // NO2
   sem_t molecules[6];		
 } t_atmosphere;
-
-typedef struct depot{
-  int index;		// keep track of where to put/grab from
-  char nums[10];        // the number char that each process currently has
-} depot;
 
 #define PRODUCER_FILE_TO_RUN "producer.dlx.obj"
 #define CONSUMER_FILE_TO_RUN "consumer.dlx.obj"
