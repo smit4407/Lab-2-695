@@ -1,10 +1,5 @@
-//
-//	synch.c
-//
-//	Routines for synchronization
-//
-//
 
+<<<<<<< HEAD
 #include "ostraps.h"
 #include "dlxos.h"
 #include "process.h"
@@ -546,3 +541,5 @@ int CondHandleSignal(cond_t c) {
   if (!conds[c].inuse)    return SYNC_FAIL;
   return CondSignal(&conds[c]);
 }
+=======
+>>>>>>> 75cb3cda6e8d6a54714a42da2c686342c2c3a7b6
