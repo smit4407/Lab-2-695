@@ -24,11 +24,7 @@ void main (int argc, char *argv[])
   // Convert string from ascii command line argument to integer number
   // Multiply by 2 because the command line arugment is number of producer consumer pairs
   numprocs = dstrtol(argv[1], NULL, 10) * 2; // the "10" means base 10
-  // if(numprocs > 10){
-  //   Printf("ERROR: Max number of producer/consumer pairs you can make is 10.");
-  //   Exit();
-  // }
-  Printf("Creating %d processes\n", numprocs);
+  // Printf("Creating %d processes\n", numprocs);
 
   // Allocate space for a shared memory page, which is exactly 64KB
   // Note that it doesn't matter how much memory we actually need: we 
@@ -49,14 +45,7 @@ void main (int argc, char *argv[])
     Printf("ERROR: Could not create lock! Exiting.\n");
     Exit();
   }
-  Printf("makeprocs: Lock created with handle: %d\n", l);
   buf->lock = l;
-  //if((res = lock_acquire(l)) == SYNC_FAIL){
-  //  Printf("ERROR: Failed to acquire lock! Res: %d\n");
-  //  Exit();
-  //}
-  //Printf("makeprocs: Lock acquired!\n");
-
   buf->numprocs = numprocs;
   buf->w_idx = 0;
   buf->r_idx = 0;
@@ -79,7 +68,6 @@ void main (int argc, char *argv[])
     Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
     Exit();
   }
-  Printf("argv[0] = "); Printf(argv[0]); Printf("\n");
 
   // Setup the command-line arguments for the new process.  We're going to
   // pass the handles to the shared memory page and the semaphore as strings
@@ -92,15 +80,13 @@ void main (int argc, char *argv[])
   // knows how many arguments you are sending.
   for(i=0; i<(numprocs/2); i++) {
     process_create(CONSUMER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
-    Printf("makeprocs: Consumer %d created\n", i);
+    // Printf("makeprocs: Consumer %d created\n", i);
   }
 
   for(i=0; i<(numprocs/2); i++) {
     process_create(PRODUCER_FILE_TO_RUN, h_mem_str, s_procs_completed_str, NULL);
-    Printf("makeprocs: Producer %d created\n", i);
+    // Printf("makeprocs: Producer %d created\n", i);
   }
-
-  //lock_release(buf->lock);
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
