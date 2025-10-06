@@ -38,12 +38,12 @@ void main (int argc, char *argv[])
     // Busy checking for produced data
     // first thing we must do is get lock
     if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
-      Printf("spawn_me: PID %d could NOT get lock! Res: %d\n", Getpid(), res);
+      Printf("consumer: PID %d could NOT get lock! Res: %d\n", Getpid(), res);
     }
     // Buffer is empty
     if((buf->w_idx) == (buf->r_idx)){
       lock_release(buf->lock);
-      // Printf("spawn_me: PID %d found empty buffer.\n", Getpid());
+      // Printf("consumer: PID %d found empty buffer.\n", Getpid());
     }
     else{
       // Check if head of buffer has what we are looking for
@@ -57,11 +57,12 @@ void main (int argc, char *argv[])
 	// Using subtraction trick because dstrtol needs null terminated string
 	Printf("Consumer %d removed: %d\n", Getpid(), (product - '0'));
       }
+
       // Head of buffer does not have what we are looking for
       // so release lock so another consumer can get item
       else{
         lock_release(buf->lock);
-        // Printf("spawn_me: PID %d did not find what it was looking for.\n", Getpid());
+        // Printf("consumer: PID %d did not find what it was looking for.\n", Getpid());
       }
     }
   }
