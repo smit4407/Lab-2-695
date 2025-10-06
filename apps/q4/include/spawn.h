@@ -7,7 +7,7 @@ typedef struct shared_buffer{
   int numprocs;
   int w_idx;
   int r_idx;
-  char buffer[BUFFER_SIZE]; 	// fixed size because malloc not available!
+  char buffer[BUFFER_SIZE]; 
   lock_t lock;
   cond_t not_full;
   cond_t not_empty;

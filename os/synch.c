@@ -440,11 +440,6 @@ int CondWait(Cond *c){
     locks[c->lock].pid = GetPidFromAddress(pcb);
     ProcessWakeup (pcb);
   }
-  //dbprintf('s', "CondWait: Proc %d is releasing the lock because it is waiting.\n", GetCurrentPid());
-  // if(LockHandleRelease(c->lock) != SYNC_SUCCESS){
-  //   printf("FATAL ERROR: Could not release lock for conditional in CondWait!\n");
-  //   exitsim();
-  // }
 
   ProcessSleep();
   RestoreIntrs(intrval);
@@ -477,7 +472,6 @@ int CondHandleWait(cond_t c) {
   if (c >= MAX_SEMS) return SYNC_FAIL;
   if (!conds[c].inuse)    return SYNC_FAIL;
   return CondWait(&conds[c]);
-  //return SYNC_SUCCESS;
 }
 
 int CondSignal(Cond *c){
@@ -486,7 +480,6 @@ int CondSignal(Cond *c){
   PCB *pcb;
 
   intrval = DisableIntrs();
-  // Confirm current process owns the lock
   if(locks[(c->lock)].pid != GetCurrentPid()){
     printf("CondWait: Proc can't wait, doesn't own lock!\n");
     dbprintf('s', "CondWait: Proc %d can't wait, doesn't own lock. Lock owner is %d\n", GetCurrentPid(), locks[(c->lock)].pid);

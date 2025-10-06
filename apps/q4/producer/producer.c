@@ -28,14 +28,6 @@ void main (int argc, char *argv[])
     Exit();
   }
  
-  // Now print a message to show that everything worked
-  //Printf("producer: This producer is one of the %d processes you created.\n", buf->numprocs);
-  //Printf("producer: PID %d is a producer process you created of a total %d.\n", Getpid(), buf->numprocs);
-  //Printf("producer: My PID is %d\n", Getpid());
-
-  //Starting point
-  // Printf("producer: PID %d has index %d and data %d\n", Getpid(), p_depot.index, dstrtol(p_depot.nums, NULL, 10));
-
   // keep trying to "produce" until we have emptied our depot
   while(p_depot.index < 10){
     // get item for producer
@@ -47,13 +39,13 @@ void main (int argc, char *argv[])
     }
     if(((buf->w_idx + 1) % BUFFER_SIZE) == buf->r_idx){
     	// circular buffer is full do not write to it
-    	Printf("producer: PID %d cannot write to buffer it is full.\n", Getpid());
+    	// Printf("producer: PID %d cannot write to buffer it is full.\n", Getpid());
     	cond_wait(buf->not_full);
     }
     // lock acquired insert data and increment write index
     buf->buffer[buf->w_idx] = product;
     buf->w_idx = (buf->w_idx + 1) % BUFFER_SIZE;
-    Printf("producer: Producer %d inserted: %d\n", Getpid(), dstrtol(&product, NULL, 10));
+    Printf("Producer %d inserted: %d\n", Getpid(), dstrtol(&product, NULL, 10));
 
     // signal that data is now available
     if(cond_signal(buf->not_empty) != SYNC_SUCCESS){
@@ -66,12 +58,9 @@ void main (int argc, char *argv[])
     //Printf("producer: Producer %d index is: %d\n", Getpid(), p_depot.index);
     p_depot.index = p_depot.index + 1;
   } 
-
-  //Printf("producer: PID %d got the lock!\n", Getpid());
-  //lock_release(buf->lock);
-
+  
   // Signal the semaphore to tell the original process that we're done
-  Printf("producer: Producer %d is complete.\n", Getpid()); 
+  // Printf("Producer %d is complete.\n", Getpid()); 
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) { 
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf(", exiting...\n"); 
     Exit(); 

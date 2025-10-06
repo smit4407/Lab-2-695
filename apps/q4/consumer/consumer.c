@@ -29,62 +29,35 @@ void main (int argc, char *argv[])
     Exit();
   }
  
-  // Now print a message to show that everything worked
-  //Printf("consumer: This consumer is one of the %d processes you created.\n", buf->numprocs);
-  //Printf("consumer: PID %d is a consumer process you created of a total %d.\n", Getpid(), buf->numprocs);
-  //Printf("consumer: My PID is %d\n", Getpid());
-  
   while(c_depot.index < 10){
     ditoa(c_depot.index, &expected_item);
     // Printf("consumer: PID %d expected item: %d\n", Getpid(), dstrtol(&expected_item, NULL, 10));
     
-    // Busy checking for produced data
-    // first thing we must do is get lock
     if((res = lock_acquire(buf->lock)) == SYNC_FAIL){
       Printf("consumer: PID %d could NOT get lock! Res: %d\n", Getpid(), res);
     }
-    // Check empty buffer and head character is what we need
-   // if((buf->w_idx) == (buf->r_idx) || (buf->buffer[buf->r_idx] != expected_item)){
-   //   if(buf->w_idx == buf->r_idx){ Printf("consumer: PID %d found empty buffer.\n", Getpid()); }
-   //   if(buf->buffer[buf->r_idx] != expected_item){ Printf("consumer: PID %d expected %d not found. Head has %d\n", Getpid(), expected_item - '0', (buf->buffer[buf->r_idx]) - '0'); }
-   //   cond_wait(buf->not_empty);
-   // }
-   
     if(buf->w_idx == buf->r_idx){
-      Printf("consumer: PID %d found empty buffer.\n", Getpid());
+      // Printf("consumer: PID %d found empty buffer.\n", Getpid());
       cond_wait(buf->not_empty);
     }
     if(buf->buffer[buf->r_idx] != expected_item){
-      Printf("consumer: PID %d expected %d not found. Head has %d\n", Getpid(), expected_item - '0', (buf->buffer[buf->r_idx]) - '0');
+      // Printf("consumer: PID %d expected %d not found. Head has %d\n", Getpid(), expected_item - '0', (buf->buffer[buf->r_idx]) - '0');
     }
 
     else{   
-
-    // Printf("consumer: PID %d has passed it's while loop.\n", Getpid());
-    // Head of buffer has what we are looking for
-    // consume item and update index's
-    product = buf->buffer[buf->r_idx];
-    buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
-    Printf("Consumer %d removed: %d\n", Getpid(), (product - '0'));
-    cond_signal(buf->not_full);
-    c_depot.nums[c_depot.index] = product;
-    c_depot.index = c_depot.index + 1;
-    Printf("consumer: Consumer %d end of loop has index %d and data %d.\n", Getpid(), c_depot.index, dstrtol(c_depot.nums, NULL, 10)); 
-    //Printf("consumer: Consumer %d removed: %d\n", Getpid(), dstrtol(&product, 1, 10));
-    // Using subtraction trick because dstrtol needs null terminated string
-    // Head of buffer does not have what we are looking for
-    // so release lock so another consumer can get item
-    // Printf("consumer: PID %d did not find what it was looking for.\n", Getpid());
+      product = buf->buffer[buf->r_idx];
+      buf->r_idx = (buf->r_idx + 1) % BUFFER_SIZE;
+      Printf("Consumer %d removed: %d\n", Getpid(), (product - '0'));
+      cond_signal(buf->not_full);
+      c_depot.nums[c_depot.index] = product;
+      c_depot.index = c_depot.index + 1;
     }
     lock_release(buf->lock);
   }
 
-  //Printf("consumer: PID %d got the lock!\n", Getpid());
-  //lock_release(buf->lock);
-
   // Signal the semaphore to tell the original process that we're done
   // Printf("consumer: Consumer %d is complete.\n", Getpid()); 
-  Printf("consumer: Consumer %d is complete with data %d.\n", Getpid(), dstrtol(c_depot.nums, NULL, 10)); 
+  // Printf("Consumer %d is complete with data %d.\n", Getpid(), dstrtol(c_depot.nums, NULL, 10)); 
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) { 
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf(", exiting...\n"); 
     Exit(); 
