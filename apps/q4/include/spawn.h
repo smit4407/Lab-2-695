@@ -1,7 +1,7 @@
 #ifndef __USERPROG__
 #define __USERPROG__
 
-#define BUFFER_SIZE 32
+#define BUFFER_SIZE 32 
 
 typedef struct shared_buffer{
   int numprocs;
@@ -9,8 +9,8 @@ typedef struct shared_buffer{
   int r_idx;
   char buffer[BUFFER_SIZE]; 	// fixed size because malloc not available!
   lock_t lock;
-  sem_t s_fullslots;
-  sem_t s_emptyslots;
+  cond_t not_full;
+  cond_t not_empty;
 } shared_buffer;
 
 typedef struct depot{
