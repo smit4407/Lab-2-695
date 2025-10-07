@@ -36,6 +36,8 @@ WHERE <#> IS THE NUMBER THAT WAS JUST RUN. THERE IS A BUG SOMEWHERE IN THE MAKEF
 ######################
 ######################
 
+For question 5 our `make run` rule calls our atmospheric simulator with three N3 molecules and three H2O molecules.
+
 # External Sources Referenced
 This was used to further enhance understanding of ring buffers and the producer-consumer paradigm:
 https://pages.mtu.edu/~shene/NSF-3/e-Book/SEMA/TM-example-buffer.html
