@@ -1,3 +1,10 @@
+# Before you build our solution
+Make sure that the following two lines have been run in your bash terminal,
+```
+export PATH="/home/min/a/ece695x/labs/common/dlxos/bin:$PATH"
+export LD_LIBRARY_PATH="/home/min/a/ece695x/labs/common/gcc/lib"
+```
+
 # How to build our solution
 From the root dir enter,
 ```
