@@ -1,0 +1,37 @@
+# How to build our solution
+From the root dir enter,
+```
+mainframer.sh 'cd ./os/ && make'
+mainframer.sh 'cd ./apps/q<#>/ && make'
+```
+where <#> is the number of the question that you would like to build.
+Valid numbers are: 2, 3, 4, 5
+
+# How to run our solution
+From the root dir enter,
+```
+cd ./apps/q<#>/; make run; cd -
+```
+where <#> is the number of the question that you would like to build.
+Valid numbers are: 2, 3, 4, 5
+
+# Anything Unusual
+
+######################
+### IMPORTANT NOTE ###
+######################
+AFTER YOU HAVE RAN A PROBLEM BE SURE TO DO,
+```
+cd ./apps/q<#>/; make clean; cd -
+```
+WHERE <#> IS THE NUMBER THAT WAS JUST RUN. THERE IS A BUG SOMEWHERE IN THE MAKEFILE THAT CAN LEAD TO APPLICATION CODE NOT BEING BUILT.
+######################
+######################
+######################
+
+# External Sources Referenced
+This was used to further enhance understanding of ring buffers and the producer-consumer paradigm:
+https://pages.mtu.edu/~shene/NSF-3/e-Book/SEMA/TM-example-buffer.html
+
+This was used to understand expected performance of included standard C functions.
+https://cplusplus.com/reference/clibrary/
